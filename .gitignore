@@ -1,0 +1,5 @@
+chaindata/
+password.txt
+*.key
+.env
+node_modules/
