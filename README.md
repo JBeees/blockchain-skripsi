@@ -121,4 +121,4 @@ geth \
 ```
 
 > Ganti `enode://XXXX...` dengan enode URL dari K1
-> Ganti `<ADDR_KELOMPOK_KAMU>` dengan address validator kamu (dengan 0x)
+> Ganti `<ADDR_KELOMPOK_KAMU>` dengan address validator kamu (dengan 0x)      
