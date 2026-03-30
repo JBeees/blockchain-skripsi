@@ -44,7 +44,11 @@ tar -xvf geth-linux-amd64-1.13.15-c5ba367e.tar.gz
 # Pindahkan ke /usr/local/bin
 sudo mv geth-linux-amd64-1.13.15-c5ba367e/geth /usr/local/bin/
 
-# Verifikasi instalasi
+# Tambahkan ke PATH
+echo 'export PATH=/usr/local/bin:$PATH' >> ~/.bashrc
+source ~/.bashrc
+
+# Verifikasi instalasi — harus muncul 1.13.15
 geth version
 ```
 
@@ -87,13 +91,18 @@ Salin **Public Address** yang muncul (format `0x...`) dan kirimkan ke K1 agar bi
 ### 1. Clone Repo & Ambil genesis.json
 
 ```bash
+cd ~/case-base
 git clone https://github.com/JBeees/blockchain-skripsi.git
+cp blockchain-skripsi/genesis.json ~/case-base/
 ```
 
 ### 2. Inisialisasi Blockchain
 
 ```bash
+cd ~/case-base
 geth init --datadir ./project genesis.json
+# Harus muncul: Successfully wrote genesis state
+# Konfirmasi ke grup bahwa init berhasil
 ```
 
 ### 3. Simpan Password
@@ -103,14 +112,42 @@ echo "password_kamu" > password.txt
 chmod 600 password.txt
 ```
 
-### 4. Jalankan Node
+### 4. Generate config.toml
+
+> ⚠️ `static-nodes.json` sudah tidak didukung di Geth v1.13.15. Gunakan `config.toml` untuk static nodes.
 
 ```bash
-# Tunggu K1 bagikan enode URL dulu sebelum jalankan ini
+cd ~/case-base
+geth --datadir ./project dumpconfig > config.toml
+```
+
+### 5. Edit StaticNodes di config.toml
+
+```bash
+nano config.toml
+```
+
+Cari baris `StaticNodes` di bagian `[Node.P2P]` lalu isi dengan enode URL semua kelompok **kecuali diri sendiri**:
+
+```toml
+StaticNodes = ["enode://ENODE_K1@10.34.100.173:30303", "enode://ENODE_K3@10.34.100.177:30303", "enode://ENODE_K4@10.34.100.176:30303"]
+```
+
+> Ganti `ENODE_Kx` dengan enode URL asli masing-masing kelompok (tanpa `?discport=0` di akhir)
+> Jangan masukkan enode diri sendiri ke dalam list
+
+Simpan: `Ctrl+X` → `Y` → `Enter`
+
+### 6. Jalankan Node
+
+> Tunggu K1 bagikan enode URL dulu sebelum jalankan ini
+
+```bash
+cd ~/case-base
 geth \
-  --datadir ./project \
+  --config config.toml \
   --networkid 20260315 \
-  --bootnodes "enode://XXXX...@10.34.100.173:30303" \
+  --bootnodes "enode://ENODE_K1@10.34.100.173:30303" \
   --port 30303 \
   --http --http.addr "0.0.0.0" --http.port 8545 \
   --http.api "eth,net,web3,personal,miner" \
@@ -120,5 +157,34 @@ geth \
   --verbosity 3
 ```
 
-> Ganti `enode://XXXX...` dengan enode URL dari K1
-> Ganti `<ADDR_KELOMPOK_KAMU>` dengan address validator kamu (dengan 0x)      
+> Ganti `enode://ENODE_K1...` dengan enode URL dari K1 (IP: 10.34.100.173)
+> Ganti `<ADDR_KELOMPOK_KAMU>` dengan address validator kamu (dengan 0x)
+
+### 7. Verifikasi Jaringan
+
+```bash
+# Buka terminal baru, jangan tutup terminal node
+geth attach --datadir ~/case-base/project
+```
+
+```javascript
+net.peerCount       // harus: jumlah kelompok - 1
+clique.getSigners() // harus muncul semua address validator
+eth.blockNumber     // harus: > 0
+admin.peers         // lihat detail IP yang terhubung
+```
+
+---
+
+## Catatan Penting
+
+> - Folder `project/` berisi private key — **jangan di-push ke GitHub**
+> - File `password.txt` — **jangan di-push ke GitHub**
+> - File `config.toml` — **jangan di-push ke GitHub** (berisi konfigurasi lokal)
+> - File `genesis.json` harus **sama persis** di semua VM
+> - Node harus **terus berjalan** selama testing dan demo
+> - Gunakan Geth versi **1.13.15** — versi lebih baru tidak support Clique PoA
+
+---
+
+*Tugas Kelas A — Sistem Komputasi Terdistribusi*
