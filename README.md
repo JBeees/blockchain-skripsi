@@ -187,4 +187,102 @@ admin.peers         // lihat detail IP yang terhubung
 
 ---
 
+## Prosedur Init Ulang genesis.json
+
+> Lakukan ini jika `genesis.json` diupdate oleh K1 — **semua kelompok wajib melakukan ini tanpa terkecuali.**
+
+### 1. Stop Node
+
+```bash
+pkill geth
+
+# Verifikasi sudah mati
+ps aux | grep geth
+```
+
+### 2. Backup Keystore
+
+```bash
+cp -r ~/case-base/project/keystore ~/keystore-backup
+```
+
+> ⚠️ Jangan lewati langkah ini — keystore berisi private key validator kamu!
+
+### 3. Hapus Data Lama
+
+```bash
+rm -rf ~/case-base/project
+```
+
+### 4. Pull genesis.json Terbaru dari GitHub
+
+```bash
+cd ~/case-base/blockchain-skripsi
+git pull
+cp genesis.json ~/case-base/
+```
+
+### 5. Init Ulang
+
+```bash
+cd ~/case-base
+geth init --datadir ./project genesis.json
+# Harus muncul: Successfully wrote genesis state
+```
+
+### 6. Kembalikan Keystore
+
+```bash
+mkdir -p ~/case-base/project/keystore
+cp -r ~/keystore-backup/* ~/case-base/project/keystore/
+
+# Verifikasi keystore ada
+ls ~/case-base/project/keystore/
+# Harus muncul file UTC--...
+```
+
+### 7. Generate config.toml Ulang
+
+```bash
+cd ~/case-base
+geth --datadir ./project dumpconfig > config.toml
+```
+
+Edit StaticNodes seperti sebelumnya:
+
+```bash
+nano config.toml
+```
+
+### 8. Jalankan Node Lagi
+
+```bash
+cd ~/case-base
+nohup geth \
+  --config config.toml \
+  --networkid 20260315 \
+  --bootnodes "enode://ENODE_K1@10.34.100.173:30303" \
+  --port 30303 \
+  --http --http.addr "0.0.0.0" --http.port 8545 \
+  --http.api "eth,net,web3,personal,miner" \
+  --mine --miner.etherbase <ADDR_KELOMPOK_KAMU> \
+  --unlock <ADDR_KELOMPOK_KAMU> --password ./password.txt \
+  --allow-insecure-unlock \
+  --verbosity 3 > geth.log 2>&1 &
+```
+
+### 9. Verifikasi
+
+```bash
+geth attach --datadir ~/case-base/project
+```
+
+```javascript
+net.peerCount       // harus: jumlah kelompok - 1
+clique.getSigners() // harus muncul semua address validator
+eth.blockNumber     // harus: > 0
+```
+
+---
+
 *Tugas Kelas A — Sistem Komputasi Terdistribusi*
