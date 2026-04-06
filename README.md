@@ -154,6 +154,7 @@ geth \
   --mine --miner.etherbase <ADDR_KELOMPOK_KAMU> \
   --unlock <ADDR_KELOMPOK_KAMU> --password ./password.txt \
   --allow-insecure-unlock \
+  --http.corsdomain="*" \
   --metrics \
   --metrics.addr 0.0.0.0 \
   --metrics.port 6060 \
@@ -271,6 +272,7 @@ nohup geth \
   --mine --miner.etherbase <ADDR_KELOMPOK_KAMU> \
   --unlock <ADDR_KELOMPOK_KAMU> --password ./password.txt \
   --allow-insecure-unlock \
+  --http.corsdomain="*" \
   --metrics \
   --metrics.addr 0.0.0.0 \
   --metrics.port 6060 \
