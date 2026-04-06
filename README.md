@@ -271,6 +271,9 @@ nohup geth \
   --mine --miner.etherbase <ADDR_KELOMPOK_KAMU> \
   --unlock <ADDR_KELOMPOK_KAMU> --password ./password.txt \
   --allow-insecure-unlock \
+  --metrics \
+  --metrics.addr 0.0.0.0 \
+  --metrics.port 6060 \
   --verbosity 3 > geth.log 2>&1 &
 ```
 
